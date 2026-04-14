@@ -1,0 +1,158 @@
+{
+  "config": {
+    "group_members": ["Alice", "Bob", "Charlie"],
+    "score_mode": "average",
+    "day_start": "08:00",
+    "day_end": "24:00",
+    "slot_minutes": 30,
+    "total_slots": 32,
+    "budget": 500,
+    "budget_granularity": 10
+  },
+  "activities": [
+    {
+      "id": "sphere",
+      "name": "The Sphere Experience",
+      "cost": 60,
+      "start_slot": 4,
+      "end_slot": 8,
+      "location_id": "venetian_area",
+      "ratings": {"Alice": 10, "Bob": 9, "Charlie": 8}
+    },
+    {
+      "id": "casino_bellagio",
+      "name": "Bellagio Casino & Fountains",
+      "cost": 0,
+      "start_slot": 0,
+      "end_slot": 3,
+      "location_id": "bellagio",
+      "ratings": {"Alice": 7, "Bob": 8, "Charlie": 9}
+    },
+    {
+      "id": "high_roller",
+      "name": "High Roller Observation Wheel",
+      "cost": 35,
+      "start_slot": 6,
+      "end_slot": 8,
+      "location_id": "linq",
+      "ratings": {"Alice": 8, "Bob": 7, "Charlie": 6}
+    },
+    {
+      "id": "cirque_o",
+      "name": "Cirque du Soleil: O",
+      "cost": 80,
+      "start_slot": 20,
+      "end_slot": 24,
+      "location_id": "bellagio",
+      "ratings": {"Alice": 10, "Bob": 10, "Charlie": 9}
+    },
+    {
+      "id": "buffet_caesars",
+      "name": "Bacchanal Buffet at Caesars",
+      "cost": 40,
+      "start_slot": 8,
+      "end_slot": 11,
+      "location_id": "caesars",
+      "ratings": {"Alice": 7, "Bob": 9, "Charlie": 8}
+    },
+    {
+      "id": "gondola_ride",
+      "name": "Venetian Gondola Ride",
+      "cost": 30,
+      "start_slot": 2,
+      "end_slot": 4,
+      "location_id": "venetian_area",
+      "ratings": {"Alice": 6, "Bob": 5, "Charlie": 7}
+    },
+    {
+      "id": "fremont_street",
+      "name": "Fremont Street Experience",
+      "cost": 0,
+      "start_slot": 18,
+      "end_slot": 22,
+      "location_id": "downtown",
+      "ratings": {"Alice": 8, "Bob": 7, "Charlie": 8}
+    },
+    {
+      "id": "neon_museum",
+      "name": "Neon Museum Tour",
+      "cost": 25,
+      "start_slot": 10,
+      "end_slot": 13,
+      "location_id": "downtown",
+      "ratings": {"Alice": 9, "Bob": 6, "Charlie": 7}
+    },
+    {
+      "id": "helicopter_tour",
+      "name": "Night Helicopter Tour",
+      "cost": 100,
+      "start_slot": 24,
+      "end_slot": 27,
+      "location_id": "strip_south",
+      "ratings": {"Alice": 10, "Bob": 10, "Charlie": 10}
+    },
+    {
+      "id": "pool_party",
+      "name": "MGM Grand Pool Party",
+      "cost": 30,
+      "start_slot": 4,
+      "end_slot": 8,
+      "location_id": "mgm",
+      "ratings": {"Alice": 5, "Bob": 8, "Charlie": 7}
+    },
+    {
+      "id": "shopping_forum",
+      "name": "Forum Shops at Caesars",
+      "cost": 20,
+      "start_slot": 12,
+      "end_slot": 15,
+      "location_id": "caesars",
+      "ratings": {"Alice": 9, "Bob": 4, "Charlie": 6}
+    },
+    {
+      "id": "david_copperfield",
+      "name": "David Copperfield Show",
+      "cost": 70,
+      "start_slot": 18,
+      "end_slot": 22,
+      "location_id": "mgm",
+      "ratings": {"Alice": 8, "Bob": 9, "Charlie": 7}
+    },
+    {
+      "id": "mandalay_aquarium",
+      "name": "Shark Reef Aquarium",
+      "cost": 15,
+      "start_slot": 14,
+      "end_slot": 17,
+      "location_id": "strip_south",
+      "ratings": {"Alice": 6, "Bob": 5, "Charlie": 8}
+    },
+    {
+      "id": "escape_room",
+      "name": "Escapology Escape Room",
+      "cost": 25,
+      "start_slot": 10,
+      "end_slot": 12,
+      "location_id": "linq",
+      "ratings": {"Alice": 7, "Bob": 8, "Charlie": 9}
+    },
+    {
+      "id": "dinner_nobu",
+      "name": "Dinner at Nobu",
+      "cost": 50,
+      "start_slot": 16,
+      "end_slot": 19,
+      "location_id": "caesars",
+      "ratings": {"Alice": 9, "Bob": 8, "Charlie": 7}
+    }
+  ],
+  "travel_times": {
+    "bellagio":      {"bellagio": 0, "caesars": 5,  "venetian_area": 10, "linq": 8,  "mgm": 7,  "strip_south": 12, "downtown": 25},
+    "caesars":       {"bellagio": 5, "caesars": 0,  "venetian_area": 8,  "linq": 5,  "mgm": 10, "strip_south": 15, "downtown": 22},
+    "venetian_area": {"bellagio": 10,"caesars": 8,  "venetian_area": 0,  "linq": 3,  "mgm": 12, "strip_south": 18, "downtown": 20},
+    "linq":          {"bellagio": 8, "caesars": 5,  "venetian_area": 3,  "linq": 0,  "mgm": 10, "strip_south": 15, "downtown": 22},
+    "mgm":           {"bellagio": 7, "caesars": 10, "venetian_area": 12, "linq": 10, "mgm": 0,  "strip_south": 5,  "downtown": 28},
+    "strip_south":   {"bellagio": 12,"caesars": 15, "venetian_area": 18, "linq": 15, "mgm": 5,  "strip_south": 0,  "downtown": 30},
+    "downtown":      {"bellagio": 25,"caesars": 22, "venetian_area": 20, "linq": 22, "mgm": 28, "strip_south": 30, "downtown": 0}
+  }
+}
