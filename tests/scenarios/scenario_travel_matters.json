@@ -1,0 +1,61 @@
+{
+  "_expected": {
+    "description": "Travel durations completely alter schedule feasibility. Seemingly non-overlapping actions become functionally unreachable if booked consecutively without transition windows.",
+    "conflict_reason": "A1 ends at slot 2 (09:00). A2 begins at slot 2 (09:00). Without a buffer, the 30m travel Dijkstra evaluates blocks A2 from being viable. Backing it up to A3 resolves the issue."
+  },
+  "config": {
+    "group_members": ["Alice"],
+    "score_mode": "average",
+    "day_start": "08:00",
+    "day_end": "24:00",
+    "slot_minutes": 30,
+    "total_slots": 32,
+    "budget": 500,
+    "budget_granularity": 10
+  },
+  "activities": [
+    {
+      "id": "A1",
+      "name": "North Strip Casino",
+      "cost": 10,
+      "start_slot": 0,
+      "end_slot": 2,
+      "location_id": "strip_north",
+      "ratings": {
+        "Alice": 9
+      }
+    },
+    {
+      "id": "A2",
+      "name": "Downtown Show (Conflict)",
+      "cost": 10,
+      "start_slot": 2,
+      "end_slot": 4,
+      "location_id": "downtown",
+      "ratings": {
+        "Alice": 9
+      }
+    },
+    {
+      "id": "A3",
+      "name": "Late Downtown Show",
+      "cost": 10,
+      "start_slot": 3,
+      "end_slot": 5,
+      "location_id": "downtown",
+      "ratings": {
+        "Alice": 9
+      }
+    }
+  ],
+  "travel_times": {
+    "strip_north": {
+      "downtown": 30,
+      "strip_north": 0
+    },
+    "downtown": {
+      "strip_north": 30,
+      "downtown": 0
+    }
+  }
+}

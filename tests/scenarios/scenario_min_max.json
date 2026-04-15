@@ -1,0 +1,50 @@
+{
+  "_expected": {
+    "description": "Demonstrates the power of `min_max` in guarding against minority alienation. Average would favor A1 (avg: 8.0) but min_max sees its drop to 4 and safely elects A2 (min: 6).",
+    "optimal_pick_average": "A1_Polarizing",
+    "optimal_pick_min_max": "A2_Consensus"
+  },
+  "config": {
+    "group_members": ["Alice", "Bob", "Charlie"],
+    "score_mode": "min_max",
+    "day_start": "08:00",
+    "day_end": "24:00",
+    "slot_minutes": 30,
+    "total_slots": 32,
+    "budget": 100,
+    "budget_granularity": 10
+  },
+  "activities": [
+    {
+      "id": "A1_Polarizing",
+      "name": "Hardcore Horror House",
+      "cost": 20,
+      "start_slot": 0,
+      "end_slot": 2,
+      "location_id": "L1",
+      "ratings": {
+        "Alice": 10,
+        "Bob": 10,
+        "Charlie": 4
+      }
+    },
+    {
+      "id": "A2_Consensus",
+      "name": "Casual Comedy Club",
+      "cost": 20,
+      "start_slot": 0,
+      "end_slot": 2,
+      "location_id": "L1",
+      "ratings": {
+        "Alice": 7,
+        "Bob": 7,
+        "Charlie": 6
+      }
+    }
+  ],
+  "travel_times": {
+    "L1": {
+      "L1": 0
+    }
+  }
+}

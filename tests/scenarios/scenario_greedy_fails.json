@@ -1,0 +1,70 @@
+{
+  "_expected": {
+    "description": "Greedy fails to find the optimal combo due to the fractional knapsack trap. It selects activities with high value/cost ratios but small absolute returns, leaving no room (budget or timeline) for the larger, optimal activities.",
+    "greedy_picks": ["A1_Trap", "A3_Opt2"],
+    "greedy_value": 13,
+    "dp_picks": ["A2_Opt1", "A3_Opt2"],
+    "dp_value": 14
+  },
+  "config": {
+    "group_members": ["Alice"],
+    "score_mode": "average",
+    "day_start": "08:00",
+    "day_end": "24:00",
+    "slot_minutes": 30,
+    "total_slots": 32,
+    "budget": 10,
+    "budget_granularity": 1
+  },
+  "activities": [
+    {
+      "id": "A1_Trap",
+      "name": "Greedy Ratio Trap",
+      "cost": 4,
+      "start_slot": 0,
+      "end_slot": 2,
+      "location_id": "L1",
+      "ratings": {
+        "Alice": 6
+      }
+    },
+    {
+      "id": "A2_Opt1",
+      "name": "Optimal DP Pick 1",
+      "cost": 5,
+      "start_slot": 0,
+      "end_slot": 2,
+      "location_id": "L1",
+      "ratings": {
+        "Alice": 7
+      }
+    },
+    {
+      "id": "A3_Opt2",
+      "name": "Optimal DP Pick 2",
+      "cost": 5,
+      "start_slot": 2,
+      "end_slot": 4,
+      "location_id": "L1",
+      "ratings": {
+        "Alice": 7
+      }
+    },
+    {
+      "id": "A4_Trap2",
+      "name": "Greedy Secondary Trap",
+      "cost": 4,
+      "start_slot": 2,
+      "end_slot": 4,
+      "location_id": "L1",
+      "ratings": {
+        "Alice": 5
+      }
+    }
+  ],
+  "travel_times": {
+    "L1": {
+      "L1": 0
+    }
+  }
+}

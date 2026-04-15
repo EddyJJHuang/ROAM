@@ -1,0 +1,64 @@
+{
+  "_expected": {
+    "description": "Total budget is strictly $100 for a group of 3 members. Individual prices map to the whole group, limiting picks to a low amount of valid combinations.",
+    "viable_picks": ["A2", "A3"],
+    "skipped": ["A1"],
+    "reason": "A1 costs $40 per head. For a group of 3, the total cost is $120, which inherently exceeds the $100 group budget."
+  },
+  "config": {
+    "group_members": ["Alice", "Bob", "Charlie"],
+    "score_mode": "average",
+    "day_start": "08:00",
+    "day_end": "24:00",
+    "slot_minutes": 30,
+    "total_slots": 32,
+    "budget": 100,
+    "budget_granularity": 10
+  },
+  "activities": [
+    {
+      "id": "A1",
+      "name": "Luxury Show (Out of Budget)",
+      "cost": 40,
+      "start_slot": 0,
+      "end_slot": 2,
+      "location_id": "L1",
+      "ratings": {
+        "Alice": 10,
+        "Bob": 10,
+        "Charlie": 10
+      }
+    },
+    {
+      "id": "A2",
+      "name": "Cheap Museum",
+      "cost": 15,
+      "start_slot": 0,
+      "end_slot": 2,
+      "location_id": "L1",
+      "ratings": {
+        "Alice": 6,
+        "Bob": 6,
+        "Charlie": 6
+      }
+    },
+    {
+      "id": "A3",
+      "name": "Street Food Tour",
+      "cost": 10,
+      "start_slot": 3,
+      "end_slot": 5,
+      "location_id": "L1",
+      "ratings": {
+        "Alice": 8,
+        "Bob": 8,
+        "Charlie": 8
+      }
+    }
+  ],
+  "travel_times": {
+    "L1": {
+      "L1": 0
+    }
+  }
+}

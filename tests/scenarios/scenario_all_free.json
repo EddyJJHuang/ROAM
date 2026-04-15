@@ -1,0 +1,56 @@
+{
+  "_expected": {
+    "description": "Pricing is 0. With cost constraints effectively removed, optimization naturally bounds onto purely timeline interval density algorithms.",
+    "optimal_picks": ["A1", "A3"]
+  },
+  "config": {
+    "group_members": ["Alice"],
+    "score_mode": "average",
+    "day_start": "08:00",
+    "day_end": "24:00",
+    "slot_minutes": 30,
+    "total_slots": 32,
+    "budget": 0,
+    "budget_granularity": 1
+  },
+  "activities": [
+    {
+      "id": "A1",
+      "name": "Free Sightseeing",
+      "cost": 0,
+      "start_slot": 0,
+      "end_slot": 2,
+      "location_id": "L1",
+      "ratings": {
+        "Alice": 5
+      }
+    },
+    {
+      "id": "A2",
+      "name": "Very Long Free Walk",
+      "cost": 0,
+      "start_slot": 1,
+      "end_slot": 5,
+      "location_id": "L1",
+      "ratings": {
+        "Alice": 10
+      }
+    },
+    {
+      "id": "A3",
+      "name": "Free Museum Entry",
+      "cost": 0,
+      "start_slot": 3,
+      "end_slot": 5,
+      "location_id": "L1",
+      "ratings": {
+        "Alice": 7
+      }
+    }
+  ],
+  "travel_times": {
+    "L1": {
+      "L1": 0
+    }
+  }
+}
