@@ -6,9 +6,14 @@ import { useState, useMemo, useCallback } from 'react';
  * Fully controlled: all data flows in via props, mutations flow out
  * via onRatingsChange / onMembersChange.
  *
+ * Every loaded activity is shown so every member can express a preference;
+ * rows for activities the user has excluded are rendered dimmed as a hint
+ * that those ratings won't influence the current optimization.
+ *
  * Props
  * ─────
- *   activities      – Activity[] (filtered to selected ones)
+ *   activities      – Activity[] (full list — excluded ones included, dimmed)
+ *   excludedIds     – Set<string> of excluded activity IDs (optional)
  *   groupMembers    – string[]
  *   ratings         – { member: { activityId: number } }
  *   scoreMode       – "average" | "min_max"
@@ -27,12 +32,16 @@ const SCORES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 export default function RatingMatrix({
   activities,
+  excludedIds,
   groupMembers,
   ratings,
   scoreMode,
   onRatingsChange,
   onMembersChange,
 }) {
+  // Fallback to an empty set so the component also works when no exclusion
+  // state is wired up.
+  const excluded = excludedIds ?? new Set();
   const [newName, setNewName] = useState('');
   // Track the cell currently showing the fill-popover (double-click)
   const [fillTarget, setFillTarget] = useState(null); // { type:'row'|'col', key:string }
@@ -116,7 +125,7 @@ export default function RatingMatrix({
       <div className="glass-card-sm p-6 text-center text-gray-500 text-sm">
         {!groupMembers.length
           ? 'Add at least one group member to start rating.'
-          : 'Select activities above to build the rating matrix.'}
+          : 'Loading activities…'}
       </div>
     );
   }
@@ -173,8 +182,14 @@ export default function RatingMatrix({
 
           {/* ── Body ───────────────────────────────────────────── */}
           <tbody>
-            {activities.map((act) => (
-              <tr key={act.id} className="group border-t border-white/[0.04] hover:bg-white/[0.02] transition">
+            {activities.map((act) => {
+              const isExcluded = excluded.has(act.id);
+              return (
+              <tr
+                key={act.id}
+                className={`group border-t border-white/[0.04] hover:bg-white/[0.02] transition
+                  ${isExcluded ? 'opacity-50' : ''}`}
+              >
                 {/* Activity label */}
                 <td
                   className="py-1.5 pr-3 sticky left-0 bg-[#1e2536]/80 backdrop-blur z-10 cursor-pointer select-none relative"
@@ -185,10 +200,13 @@ export default function RatingMatrix({
                   }
                   title="Double-click to fill entire row"
                 >
-                  <span className="text-gray-300 font-medium truncate block max-w-[160px]">
+                  <span className={`text-gray-300 font-medium truncate block max-w-[160px]
+                    ${isExcluded ? 'line-through decoration-gray-600' : ''}`}>
                     {act.name}
                   </span>
-                  <span className="text-[10px] text-gray-600">{act.time_range}</span>
+                  <span className="text-[10px] text-gray-600">
+                    {act.time_range}{isExcluded ? ' · excluded' : ''}
+                  </span>
 
                   {/* Row fill popover */}
                   {fillTarget?.type === 'row' && fillTarget.key === act.id && (
@@ -231,7 +249,8 @@ export default function RatingMatrix({
                   </span>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

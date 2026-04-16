@@ -16,7 +16,10 @@ export default function App() {
   const [defaultConfig, setDefaultConfig] = useState(null);
 
   // ── User-controlled state ───────────────────────────────────
-  const [selectedIds, setSelectedIds]     = useState(new Set());
+  // `excludedIds` holds the activities the user has opted out of.
+  // Default (empty set) means every loaded activity participates in the
+  // optimization — the algorithm is the one that picks the subset.
+  const [excludedIds, setExcludedIds]     = useState(new Set());
   const [groupMembers, setGroupMembers]   = useState(['Alice', 'Bob']);
   const [ratings, setRatings]             = useState({});  // { member: { actId: score } }
   const [budget, setBudget]               = useState(500);
@@ -34,8 +37,8 @@ export default function App() {
         setAllActivities(data.activities);
         setTravelTimes(data.travel_times);
         setDefaultConfig(data.config);
-        // Start with nothing selected — user chooses what to consider
-        setSelectedIds(new Set());
+        // Every activity is considered by default; users opt out individually.
+        setExcludedIds(new Set());
         // Seed default ratings (5 for everything)
         const seed = {};
         for (const m of ['Alice', 'Bob']) {
@@ -48,33 +51,17 @@ export default function App() {
   }, []);
 
   // ── Helpers ─────────────────────────────────────────────────
-  const selectedActivities = allActivities.filter((a) => selectedIds.has(a.id));
-
-  // Total group spend for currently-selected activities
-  // (backend charges act.cost × group_size against the group budget)
   const groupSize = Math.max(groupMembers.length, 1);
-  const selectedGroupCost = selectedActivities.reduce(
-    (sum, a) => sum + a.cost * groupSize,
-    0,
-  );
-  const budgetExhausted = selectedGroupCost >= budget;
+  const includedActivities = allActivities.filter((a) => !excludedIds.has(a.id));
 
-  const toggleActivity = useCallback((id) => {
-    setSelectedIds((prev) => {
+  const toggleExclude = useCallback((id) => {
+    setExcludedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-        return next;
-      }
-      // Block new paid selections once the group budget is reached,
-      // but always allow free activities (cost === 0) through.
-      const act = allActivities.find((a) => a.id === id);
-      const isFree = act ? act.cost === 0 : false;
-      if (budgetExhausted && !isFree) return prev;
-      next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
-  }, [budgetExhausted, allActivities]);
+  }, []);
 
   const handleRatingChange = useCallback((member, actId, value) => {
     const clamped = Math.max(1, Math.min(10, value || 1));
@@ -109,8 +96,8 @@ export default function App() {
       setError('Add at least one group member.');
       return;
     }
-    if (selectedIds.size === 0) {
-      setError('Select at least one activity.');
+    if (includedActivities.length === 0) {
+      setError("You've excluded every activity — include at least one to optimize.");
       return;
     }
 
@@ -119,6 +106,15 @@ export default function App() {
     setResults(null);
 
     try {
+      // Strip frontend-only fields (time_range, start_time, end_time) so the
+      // payload matches the backend Activity dataclass. The top-level
+      // `ratings` dict is the source of truth; we pass an empty `ratings`
+      // placeholder on each activity (backend overwrites it per member).
+      const activitiesPayload = includedActivities.map(
+        ({ id, name, cost, start_slot, end_slot, location_id }) => ({
+          id, name, cost, start_slot, end_slot, location_id, ratings: {},
+        }),
+      );
       const data = await solveItinerary({
         config: {
           group_members: groupMembers,
@@ -126,6 +122,8 @@ export default function App() {
           budget,
         },
         ratings,
+        activities: activitiesPayload,
+        travel_times: travelTimes,
       });
       setResults(data);
     } catch (err) {
@@ -172,16 +170,14 @@ export default function App() {
 
           <ActivityInput
             activities={allActivities}
-            selected={selectedIds}
-            onToggle={toggleActivity}
+            excluded={excludedIds}
+            onToggleExclude={toggleExclude}
             groupSize={groupSize}
-            budget={budget}
-            selectedGroupCost={selectedGroupCost}
-            budgetExhausted={budgetExhausted}
           />
 
           <RatingMatrix
-            activities={selectedActivities}
+            activities={allActivities}
+            excludedIds={excludedIds}
             groupMembers={groupMembers}
             ratings={ratings}
             scoreMode={scoreMode}
