@@ -48,7 +48,7 @@ def dp_solve(activities: List[Activity], config: Config, shortest_times: Dict[st
             # Evaluate all possible activities starting at the current time slot t
             for act in sorted_acts:
                 if act.start_slot == t:
-                    cost_units = (act.cost * group_size) // config.budget_granularity
+                    cost_units = math.ceil((act.cost * group_size) / config.budget_granularity)
                     
                     if b >= cost_units:
                         # Find the earliest available slot after the activity finishes.
@@ -88,7 +88,7 @@ def dp_solve(activities: List[Activity], config: Config, shortest_times: Dict[st
                     
             if can_transition:
                 selected.append(act)
-                b -= (act.cost * group_size) // config.budget_granularity
+                b -= math.ceil((act.cost * group_size) / config.budget_granularity)
                 t = act.end_slot
             else:
                 t += 1
