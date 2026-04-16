@@ -5,8 +5,7 @@ import RatingMatrix   from './components/RatingMatrix';
 import BudgetControls from './components/BudgetControls';
 import Timeline       from './components/Timeline';
 import ComparisonChart from './components/ComparisonChart';
-
-const API_BASE = '/api';
+import { fetchActivities, solveItinerary } from './api';
 
 /* ────────────────────────────────────────────────────────────── */
 
@@ -30,17 +29,13 @@ export default function App() {
 
   // ── Load preset activities on mount ─────────────────────────
   useEffect(() => {
-    fetch(`${API_BASE}/activities`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
+    fetchActivities()
       .then((data) => {
         setAllActivities(data.activities);
         setTravelTimes(data.travel_times);
         setDefaultConfig(data.config);
-        // Select all by default
-        setSelectedIds(new Set(data.activities.map((a) => a.id)));
+        // Start with nothing selected — user chooses what to consider
+        setSelectedIds(new Set());
         // Seed default ratings (5 for everything)
         const seed = {};
         for (const m of ['Alice', 'Bob']) {
@@ -55,13 +50,28 @@ export default function App() {
   // ── Helpers ─────────────────────────────────────────────────
   const selectedActivities = allActivities.filter((a) => selectedIds.has(a.id));
 
+  // Total group spend for currently-selected activities
+  // (backend charges act.cost × group_size against the group budget)
+  const groupSize = Math.max(groupMembers.length, 1);
+  const selectedGroupCost = selectedActivities.reduce(
+    (sum, a) => sum + a.cost * groupSize,
+    0,
+  );
+  const budgetExhausted = selectedGroupCost >= budget;
+
   const toggleActivity = useCallback((id) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+        return next;
+      }
+      // Block new selections once current total meets/exceeds the group budget
+      if (budgetExhausted) return prev;
+      next.add(id);
       return next;
     });
-  }, []);
+  }, [budgetExhausted]);
 
   const handleRatingChange = useCallback((member, actId, value) => {
     const clamped = Math.max(1, Math.min(10, value || 1));
@@ -106,25 +116,14 @@ export default function App() {
     setResults(null);
 
     try {
-      const res = await fetch(`${API_BASE}/solve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          config: {
-            group_members: groupMembers,
-            score_mode: scoreMode,
-            budget,
-          },
-          ratings,
-        }),
+      const data = await solveItinerary({
+        config: {
+          group_members: groupMembers,
+          score_mode: scoreMode,
+          budget,
+        },
+        ratings,
       });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `Server returned ${res.status}`);
-      }
-
-      const data = await res.json();
       setResults(data);
     } catch (err) {
       setError(err.message);
@@ -172,6 +171,10 @@ export default function App() {
             activities={allActivities}
             selected={selectedIds}
             onToggle={toggleActivity}
+            groupSize={groupSize}
+            budget={budget}
+            selectedGroupCost={selectedGroupCost}
+            budgetExhausted={budgetExhausted}
           />
 
           <RatingMatrix

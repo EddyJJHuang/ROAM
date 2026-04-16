@@ -1,14 +1,17 @@
 /**
- * BudgetControls – budget slider and score-mode toggle.
+ * BudgetControls – group-budget slider, member list, and score-mode toggle.
+ *
+ * The budget is the *total* pool for the whole group. A per-person hint is
+ * rendered below the slider so users can see what the budget means per head.
  *
  * Props:
- *   budget       – current budget value ($)
- *   onBudgetChange – (value: number) => void
- *   scoreMode    – "average" | "min_max"
+ *   budget            – total group budget ($)
+ *   onBudgetChange    – (value: number) => void
+ *   scoreMode         – "average" | "min_max"
  *   onScoreModeChange – (mode: string) => void
- *   groupMembers – string[]
- *   onAddMember  – (name: string) => void
- *   onRemoveMember – (name: string) => void
+ *   groupMembers      – string[]
+ *   onAddMember       – (name: string) => void
+ *   onRemoveMember    – (name: string) => void
  */
 import { useState } from 'react';
 
@@ -75,7 +78,9 @@ export default function BudgetControls({
 
       {/* ── Budget ─────────────────────────────────────────── */}
       <div className="space-y-2">
-        <p className="section-label">Budget</p>
+        <div className="flex items-baseline justify-between">
+          <p className="section-label">Group Budget <span className="text-gray-500 font-normal normal-case tracking-normal">(total for the whole team)</span></p>
+        </div>
         <div className="flex items-center gap-4">
           <input
             id="budget-slider"
@@ -89,6 +94,15 @@ export default function BudgetControls({
           />
           <span className="text-lg font-bold tabular-nums text-white">${budget}</span>
         </div>
+        {/* Per-person breakdown — makes the total-budget semantics explicit */}
+        {groupMembers.length > 0 && (
+          <p className="text-xs text-gray-500">
+            ≈ <span className="tabular-nums text-gray-300 font-medium">
+              ${(budget / groupMembers.length).toFixed(2)}
+            </span>{' '}
+            per person · {groupMembers.length} member{groupMembers.length === 1 ? '' : 's'}
+          </p>
+        )}
       </div>
 
       {/* ── Score Mode ─────────────────────────────────────── */}
