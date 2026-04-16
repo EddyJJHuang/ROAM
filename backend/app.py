@@ -5,6 +5,7 @@ Provides endpoints for the Ratings-Optimized Activity Manager system.
 Runs both greedy and DP solvers and returns comparison results to the
 React frontend.
 """
+# Note: imports use relative module names (not `backend.xxx`) for deployment compatibility
 import os
 import json
 import traceback
@@ -13,10 +14,10 @@ from dataclasses import asdict
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-from backend.models import Activity, Config, load_data, slot_to_time, compute_value
-from backend.dijkstra import compute_all_pairs_shortest
-from backend.greedy_solver import greedy_solve
-from backend.dp_solver import dp_solve
+from models import Activity, Config, load_data, slot_to_time, compute_value
+from dijkstra import compute_all_pairs_shortest
+from greedy_solver import greedy_solve
+from dp_solver import dp_solve
 
 app = Flask(__name__)
 CORS(app)

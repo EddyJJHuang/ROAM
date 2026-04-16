@@ -1,7 +1,8 @@
+# Note: imports use relative module names (not `backend.xxx`) for deployment compatibility
 from typing import List, Dict, Any
 
-from backend.models import Activity, Config, compute_value, slot_to_time
-from backend.dijkstra import is_transition_feasible
+from models import Activity, Config, compute_value, slot_to_time
+from dijkstra import is_transition_feasible
 
 def has_conflict(new_act: Activity, selected: List[Activity], shortest_times: Dict[str, Dict[str, int]], slot_minutes: int) -> bool:
     """

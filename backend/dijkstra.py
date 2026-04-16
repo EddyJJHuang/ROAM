@@ -1,8 +1,9 @@
+# Note: imports use relative module names (not `backend.xxx`) for deployment compatibility
 import heapq
 import sys
 from typing import Dict
 
-from backend.models import Activity
+from models import Activity
 
 def dijkstra(graph: dict[str, dict[str, int]], source: str) -> dict[str, int]:
     """

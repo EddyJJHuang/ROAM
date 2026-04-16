@@ -1,8 +1,9 @@
+# Note: imports use relative module names (not `backend.xxx`) for deployment compatibility
 import math
 import sys
 from typing import Dict, Any, List
 
-from backend.models import Activity, Config, compute_value, slot_to_time
+from models import Activity, Config, compute_value, slot_to_time
 
 def dp_solve(activities: List[Activity], config: Config, shortest_times: Dict[str, Dict[str, int]]) -> Dict[str, Any]:
     """
