@@ -45,7 +45,7 @@ export default function ActivityInput({
 
       {budgetExhausted && (
         <div className="rounded-lg bg-rose-500/10 border border-rose-500/25 px-3 py-2 text-xs text-rose-300">
-          Group budget reached. Deselect an activity to free up room.
+          Group budget reached. Deselect a paid activity to add another — free activities can still be selected.
         </div>
       )}
 
@@ -53,7 +53,11 @@ export default function ActivityInput({
         {activities.map((act) => {
           const isOn = selected.has(act.id);
           const groupCost = act.cost * groupSize;
-          const disabled = !isOn && budgetExhausted;
+          // Free activities bypass the budget gate: they add $0 to the group
+          // total, so users can always keep selecting them even after the
+          // group budget is reached.
+          const isFree = act.cost === 0;
+          const disabled = !isOn && budgetExhausted && !isFree;
           return (
             <button
               key={act.id}
@@ -63,7 +67,7 @@ export default function ActivityInput({
               aria-disabled={disabled}
               title={
                 disabled
-                  ? 'Budget reached — deselect another activity first'
+                  ? 'Budget reached — deselect a paid activity first (free activities are still available)'
                   : undefined
               }
               className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-left text-sm transition-all duration-200

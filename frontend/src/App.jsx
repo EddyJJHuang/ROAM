@@ -66,12 +66,15 @@ export default function App() {
         next.delete(id);
         return next;
       }
-      // Block new selections once current total meets/exceeds the group budget
-      if (budgetExhausted) return prev;
+      // Block new paid selections once the group budget is reached,
+      // but always allow free activities (cost === 0) through.
+      const act = allActivities.find((a) => a.id === id);
+      const isFree = act ? act.cost === 0 : false;
+      if (budgetExhausted && !isFree) return prev;
       next.add(id);
       return next;
     });
-  }, [budgetExhausted]);
+  }, [budgetExhausted, allActivities]);
 
   const handleRatingChange = useCallback((member, actId, value) => {
     const clamped = Math.max(1, Math.min(10, value || 1));
