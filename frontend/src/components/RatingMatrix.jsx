@@ -12,13 +12,16 @@ import { useState, useMemo, useCallback } from 'react';
  *
  * Props
  * ─────
- *   activities      – Activity[] (full list — excluded ones included, dimmed)
- *   excludedIds     – Set<string> of excluded activity IDs (optional)
- *   groupMembers    – string[]
- *   ratings         – { member: { activityId: number } }
- *   scoreMode       – "average" | "min_max"
- *   onRatingsChange – (newRatings: object) => void
- *   onMembersChange – (newMembers: string[]) => void
+ *   activities           – Activity[] (full list — excluded ones included, dimmed)
+ *   excludedIds          – Set<string> of excluded activity IDs (optional)
+ *   groupMembers         – string[]
+ *   ratings              – { member: { activityId: number } }
+ *   scoreMode            – "average" | "min_max"
+ *   onRatingsChange      – (newRatings: object) => void
+ *   onMembersChange      – (newMembers: string[]) => void
+ *   onBudgetChange       – (value: number) => void         (optional; used by presets)
+ *   onScoreModeChange    – (mode: string) => void          (optional; used by presets)
+ *   onExcludedIdsChange  – (set: Set<string>) => void      (optional; presets clear exclusions)
  */
 
 /* ── Rating colour helpers ────────────────────────────────────── */
@@ -30,6 +33,106 @@ const ratingBg = (v) => {
 
 const SCORES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
+/* ── Rating presets ───────────────────────────────────────────────
+ * One-click demo scenarios that mirror run_experiments.py exactly, so
+ * the Greedy vs DP numbers on screen match the write-up. Every preset
+ * uses the same ratings (DEFAULT_RATINGS below, which are copied from
+ * backend/data/vegas_activities.json); the scenarios differ only by
+ *   • budget,
+ *   • score mode, and
+ *   • which activities are pre-included (everything else is excluded).
+ *
+ * Preset schema:
+ *   members      : string[]                       (required)
+ *   ratings      : { member: { actId: 1-10 } }    (required, ≥15 entries)
+ *   budget       : number                          (required)
+ *   scoreMode    : 'average' | 'min_max'           (required)
+ *   includedIds  : string[] | null                 (null = include every activity)
+ *
+ * Expected Greedy-vs-DP gaps (from run_experiments.py):
+ *   Default Las Vegas       DP +10.9%
+ *   Tight Budget ($100)     DP  +7.6%
+ *   Travel Matters          SAME (0%)
+ *   All Free                SAME (0%)
+ *   Min-Max Fairness        DP +15.6%
+ */
+const DEFAULT_RATINGS = {
+  Alice: {
+    casino_bellagio: 7, gondola_ride: 6, sphere: 10, pool_party: 5,
+    high_roller: 8, buffet_caesars: 7, neon_museum: 9, escape_room: 7,
+    shopping_forum: 9, mandalay_aquarium: 6, dinner_nobu: 9,
+    fremont_street: 8, david_copperfield: 8, cirque_o: 10,
+    helicopter_tour: 10,
+  },
+  Bob: {
+    casino_bellagio: 8, gondola_ride: 5, sphere: 9, pool_party: 8,
+    high_roller: 7, buffet_caesars: 9, neon_museum: 6, escape_room: 8,
+    shopping_forum: 4, mandalay_aquarium: 5, dinner_nobu: 8,
+    fremont_street: 7, david_copperfield: 9, cirque_o: 10,
+    helicopter_tour: 10,
+  },
+  Charlie: {
+    casino_bellagio: 9, gondola_ride: 7, sphere: 8, pool_party: 7,
+    high_roller: 6, buffet_caesars: 8, neon_museum: 7, escape_room: 9,
+    shopping_forum: 6, mandalay_aquarium: 8, dinner_nobu: 7,
+    fremont_street: 8, david_copperfield: 7, cirque_o: 9,
+    helicopter_tour: 10,
+  },
+};
+
+const RATING_PRESETS = [
+  {
+    id: 'default',
+    label: 'Default',
+    description: 'All 15 activities · $500 · average — DP +10.9% over Greedy',
+    members: ['Alice', 'Bob', 'Charlie'],
+    ratings: DEFAULT_RATINGS,
+    budget: 500,
+    scoreMode: 'average',
+    includedIds: null,
+  },
+  {
+    id: 'tight_budget',
+    label: 'Tight Budget',
+    description: 'All 15 · $100 · average — pricey headliners drop out (DP +7.6%)',
+    members: ['Alice', 'Bob', 'Charlie'],
+    ratings: DEFAULT_RATINGS,
+    budget: 100,
+    scoreMode: 'average',
+    includedIds: null,
+  },
+  {
+    id: 'all_free',
+    label: 'All Free',
+    description: 'Only cost=$0 activities · $500 · average — Greedy = DP',
+    members: ['Alice', 'Bob', 'Charlie'],
+    ratings: DEFAULT_RATINGS,
+    budget: 500,
+    scoreMode: 'average',
+    includedIds: ['casino_bellagio', 'fremont_street'],
+  },
+  {
+    id: 'min_max',
+    label: 'Min-Max',
+    description: 'All 15 · $500 · min_max — fairness mode, DP +15.6% over Greedy',
+    members: ['Alice', 'Bob', 'Charlie'],
+    ratings: DEFAULT_RATINGS,
+    budget: 500,
+    scoreMode: 'min_max',
+    includedIds: null,
+  },
+  {
+    id: 'travel_matters',
+    label: 'Travel Matters',
+    description: 'Downtown + Strip South only · $500 · average — travel constraint dominates, Greedy = DP',
+    members: ['Alice', 'Bob', 'Charlie'],
+    ratings: DEFAULT_RATINGS,
+    budget: 500,
+    scoreMode: 'average',
+    includedIds: ['fremont_street', 'neon_museum', 'helicopter_tour', 'mandalay_aquarium'],
+  },
+];
+
 export default function RatingMatrix({
   activities,
   excludedIds,
@@ -38,6 +141,9 @@ export default function RatingMatrix({
   scoreMode,
   onRatingsChange,
   onMembersChange,
+  onBudgetChange,
+  onScoreModeChange,
+  onExcludedIdsChange,
 }) {
   // Fallback to an empty set so the component also works when no exclusion
   // state is wired up.
@@ -119,6 +225,46 @@ export default function RatingMatrix({
     onRatingsChange(next);
   };
 
+  /* ── Preset application ─────────────────────────────────────── */
+  // Replace members + the full ratings matrix, and optionally override
+  // budget / score mode / activity inclusion list. Per-member rating
+  // dicts are shallow-copied so we never leak the preset object's
+  // references into component state.
+  //
+  // `preset.includedIds`:
+  //   • null / undefined → clear all exclusions (every activity in)
+  //   • string[]         → include exactly those; exclude the rest
+  //                        (computed against the current activity list
+  //                        so unknown ids from the preset are ignored).
+  const applyPreset = useCallback(
+    (preset) => {
+      onMembersChange([...preset.members]);
+      const nextRatings = {};
+      for (const m of preset.members) {
+        nextRatings[m] = { ...(preset.ratings[m] || {}) };
+      }
+      onRatingsChange(nextRatings);
+      if (preset.budget !== undefined && onBudgetChange) {
+        onBudgetChange(preset.budget);
+      }
+      if (preset.scoreMode !== undefined && onScoreModeChange) {
+        onScoreModeChange(preset.scoreMode);
+      }
+      if (onExcludedIdsChange) {
+        if (preset.includedIds == null) {
+          onExcludedIdsChange(new Set());
+        } else {
+          const allow = new Set(preset.includedIds);
+          const nextExcluded = new Set(
+            activities.filter((a) => !allow.has(a.id)).map((a) => a.id),
+          );
+          onExcludedIdsChange(nextExcluded);
+        }
+      }
+    },
+    [activities, onMembersChange, onRatingsChange, onBudgetChange, onScoreModeChange, onExcludedIdsChange],
+  );
+
   /* ── Empty state ────────────────────────────────────────────── */
   if (!activities.length || !groupMembers.length) {
     return (
@@ -137,6 +283,24 @@ export default function RatingMatrix({
       <p className="text-[11px] text-gray-500 -mt-1">
         Double-click a <strong>member name</strong> or <strong>activity row</strong> to bulk-fill scores.
       </p>
+
+      {/* ── Preset fillers: replace members + ratings in one click ── */}
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        <span className="text-[11px] text-gray-500 mr-1">Presets:</span>
+        {RATING_PRESETS.map((p) => (
+          <button
+            key={p.id}
+            id={`rating-preset-${p.id}`}
+            onClick={() => applyPreset(p)}
+            title={p.description}
+            className="px-2.5 py-1 rounded-lg text-[11px] font-semibold
+                       bg-indigo-500/15 text-indigo-300 border border-indigo-500/25
+                       hover:bg-indigo-500/25 hover:border-indigo-500/40 transition"
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
 
       <div className="overflow-x-auto -mx-1 px-1">
         <table className="w-full text-[13px] border-collapse min-w-[480px]">

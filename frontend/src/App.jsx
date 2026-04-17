@@ -20,7 +20,7 @@ export default function App() {
   // Default (empty set) means every loaded activity participates in the
   // optimization — the algorithm is the one that picks the subset.
   const [excludedIds, setExcludedIds]     = useState(new Set());
-  const [groupMembers, setGroupMembers]   = useState(['Alice', 'Bob']);
+  const [groupMembers, setGroupMembers]   = useState(['Alice', 'Bob', 'Charlie']);
   const [ratings, setRatings]             = useState({});  // { member: { actId: score } }
   const [budget, setBudget]               = useState(500);
   const [scoreMode, setScoreMode]         = useState('average');
@@ -41,7 +41,7 @@ export default function App() {
         setExcludedIds(new Set());
         // Seed default ratings (5 for everything)
         const seed = {};
-        for (const m of ['Alice', 'Bob']) {
+        for (const m of ['Alice', 'Bob', 'Charlie']) {
           seed[m] = {};
           for (const a of data.activities) seed[m][a.id] = 5;
         }
@@ -183,6 +183,9 @@ export default function App() {
             scoreMode={scoreMode}
             onRatingsChange={setRatings}
             onMembersChange={setGroupMembers}
+            onBudgetChange={setBudget}
+            onScoreModeChange={setScoreMode}
+            onExcludedIdsChange={setExcludedIds}
           />
 
           {/* Optimize button */}

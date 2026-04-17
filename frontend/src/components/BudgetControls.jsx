@@ -85,7 +85,7 @@ export default function BudgetControls({
           <input
             id="budget-slider"
             type="range"
-            min={100}
+            min={0}
             max={2000}
             step={50}
             value={budget}
